@@ -37,7 +37,7 @@ select
 from @w22_frosty_stage (pattern=>'.*sales_areas.*') t;
 
 -- Checking table and checking mod(district, 2) behavior for mapping table  
-select *, mod(district,2) from atzmon_db.challenges.week22;
+select *, mod(id, 2) from atzmon_db.challenges.week22;
 
 -- Code for creating a mapping table
 create or replace table mapping22_tbl(
@@ -58,12 +58,14 @@ create or replace secure view secure_cities as
         w22.city,
         w22.district
     from atzmon_db.challenges.week22 w22
-    where mod(w22.district, 2) = (select kind 
+    where mod(w22.id, 2) = (select kind 
                                   from mapping22_tbl
                                   where current_role() = upper(role_name)
                                     );
 
         
+
+    
 -- Roles need DB access
 grant usage on database atzmon_db to role rep1;
 grant usage on database atzmon_db to role rep2;
