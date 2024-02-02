@@ -1,0 +1,47 @@
+I first downloaded the shp file 
+My approach is to convert the shp file into WKT using GDAL/ogr library
+I do that on the command line.
+
+$ ogr2ogr -f "ESRI Shapefile" intermediate_railways.shp railways.shp
+ogr2ogr -f CSV -dialect sqlite -sql "select ST_AsText(geometry) AS WKT,* from intermediate_railways" output_railways_wkt.csv intermediate_railways.shp
+
+Then run the rest of the SQL code in snowflake work sheet or using snowSQL.
+Uploading the file to snowflake using snowSQL.
+
+
+
+-- Environment
+use warehouse compute_wh;
+use database atzmon_db;
+use schema challenges;
+
+-- Create a file format to deal with the csv
+create or replace FILE FORMAT wk77_csv
+    TYPE='CSV'
+    SKIP_HEADER = 1
+    FIELD_OPTIONALLY_ENCLOSED_BY = '"';
+
+-- Create a stage
+create or replace stage wk77
+file_format = wk77_csv;
+
+-- Uploading the file to snowflake using snowSQL
+PUT file:///Users/atzmonky/italy-railways-shape/output_railways_wkt.csv @ATZMON_DB.CHALLENGES.wk77;
+
+-- Check the data
+list @wk77;
+
+select $1, $2, $3
+from @wk77/output_railways_wkt.csv.gz;
+
+-- And then write into a table
+create or replace TABLE week77_geo AS (
+  select  
+    to_geography(a.$1) as wkt,
+    a.$2::VARCHAR as osm_id,
+    a.$3::VARCHAR as name
+  from @wk77/output_railways_wkt.csv.gz a 
+);
+
+select * from week77_geo;
+
