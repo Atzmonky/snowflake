@@ -9,7 +9,6 @@ Then run the rest of the SQL code in snowflake work sheet or using snowSQL.
 Uploading the file to snowflake using snowSQL.
 
 
-
 -- Environment
 use warehouse compute_wh;
 use database atzmon_db;
